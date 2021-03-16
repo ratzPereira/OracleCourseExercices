@@ -6,7 +6,7 @@ import java.math.RoundingMode;
 public class Product {
 
 
-    public static final BigDecimal DISCOUNT_RATE = BigDecimal.valueOf(0.1);
+    private static final BigDecimal DISCOUNT_RATE = BigDecimal.valueOf(0.1);
 
     private int id;
     private String name;

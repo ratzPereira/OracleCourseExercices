@@ -1,9 +1,6 @@
 package com.ratz.shop;
 
-import com.ratz.shop.data.Drink;
-import com.ratz.shop.data.Food;
-import com.ratz.shop.data.Product;
-import com.ratz.shop.data.Rating;
+import com.ratz.shop.data.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,12 +9,18 @@ public class Shop {
 
     public static void main(String[] args) {
 
+        ProductManager pm = new ProductManager();
 
-        Product p1 = new Product(100, "Tea", BigDecimal.valueOf(1.99));
-        Product p2 = new Drink(102,"Coffe",BigDecimal.valueOf(1.99), Rating.TWO_STAR);
-        Product p3 = new Food(104,"Cake",BigDecimal.valueOf(3.99), Rating.ONE_STAR, LocalDate.now().plusDays(2));
-        Product p4 = new Product();
+        Product p1 = pm.createNewProduct(100, "Tea", BigDecimal.valueOf(1.99), Rating.THREE_STAR);
+        Product p2 = pm.createNewProduct(102,"Coffe",BigDecimal.valueOf(1.99), Rating.TWO_STAR);
+        Product p3 = pm.createNewProduct(104,"Cake",BigDecimal.valueOf(3.99), Rating.ONE_STAR, LocalDate.now().plusDays(2));
+        Product p4 = pm.createNewProduct(106, "Cookie", BigDecimal.valueOf(3.99), Rating.FOUR_STAR, LocalDate.now());
+        Product p6 = pm.createNewProduct(105,"Chocolate",BigDecimal.valueOf(2.99),Rating.FIVE_STAR);
+        Product p7 = pm.createNewProduct(105,"Chocolate",BigDecimal.valueOf(2.99),Rating.FIVE_STAR, LocalDate.now().plusDays(2));
+
         Product p5 = p3.applyRating(Rating.THREE_STAR);
+        Product p8 = p4.applyRating(Rating.FIVE_STAR);
+        Product p9 = p1.applyRating(Rating.TWO_STAR);
 
 
 
@@ -32,5 +35,8 @@ public class Shop {
         System.out.println(p4);
         System.out.println(p5);
         System.out.println(LocalDate.now().plusDays(2));
+        System.out.println(p6.equals(p7));
+        System.out.println(p8);
+        System.out.println(p9);
     }
 }

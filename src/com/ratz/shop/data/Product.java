@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public abstract class Product {
+public abstract class Product implements Rateable<Product> {
 
 
     private static final BigDecimal DISCOUNT_RATE = BigDecimal.valueOf(0.1);
@@ -53,11 +53,11 @@ public abstract class Product {
         return price.multiply(DISCOUNT_RATE).setScale(2, RoundingMode.HALF_UP);
     }
 
+    @Override
     public Rating getRating() {
         return rating;
     }
 
-    public abstract Product applyRating(Rating newRating);
 
     @Override
     public boolean equals(Object o) {

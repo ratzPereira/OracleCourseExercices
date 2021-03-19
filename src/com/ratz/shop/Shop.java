@@ -4,7 +4,7 @@ import com.ratz.shop.data.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Locale;
+import java.util.*;
 
 public class Shop {
 
@@ -13,6 +13,8 @@ public class Shop {
         ProductManager pm = new ProductManager(Locale.UK);
 
         Product p1 = pm.createNewProduct(100, "Tea", BigDecimal.valueOf(1.99), Rating.NOT_RATED);
+
+
 //        Product p2 = pm.createNewProduct(102,"Coffe",BigDecimal.valueOf(1.99), Rating.TWO_STAR);
 //        Product p3 = pm.createNewProduct(104,"Cake",BigDecimal.valueOf(3.99), Rating.ONE_STAR, LocalDate.now().plusDays(2));
 //        Product p4 = pm.createNewProduct(106, "Cookie", BigDecimal.valueOf(3.99), Rating.FOUR_STAR, LocalDate.now());
@@ -40,12 +42,12 @@ public class Shop {
 //        System.out.println(p8);
 //        System.out.println(p9);
 
-        pm.printProductReport();
+        pm.printProductReport(p1);
 
         p1 = pm.reviewProduct(p1, Rating.FOUR_STAR, "Nice and hot!");
         p1 = pm.reviewProduct(p1, Rating.FIVE_STAR, "Best evah!!");
         p1 = pm.reviewProduct(p1, Rating.TWO_STAR, "Not bad and not good!");
         p1 = pm.reviewProduct(p1, Rating.TWO_STAR, "Not good and not bad!");
-        pm.printProductReport();
+        pm.printProductReport(p1);
     }
 }

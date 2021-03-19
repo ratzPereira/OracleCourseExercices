@@ -43,6 +43,9 @@ public class Shop {
         pm.printProductReport();
 
         p1 = pm.reviewProduct(p1, Rating.FOUR_STAR, "Nice and hot!");
+        p1 = pm.reviewProduct(p1, Rating.FIVE_STAR, "Best evah!!");
+        p1 = pm.reviewProduct(p1, Rating.TWO_STAR, "Not bad and not good!");
+        p1 = pm.reviewProduct(p1, Rating.TWO_STAR, "Not good and not bad!");
         pm.printProductReport();
     }
 }

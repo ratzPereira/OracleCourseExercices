@@ -63,6 +63,16 @@ public class ProductManager {
 
         return product;
     }
+    public Product reviewProduct(int id, Rating rating, String comments) {
+
+       return reviewProduct(searchProduct(id), rating, comments);
+    }
+
+    public void printProductReport(int id) {
+
+        printProductReport(searchProduct(id));
+    }
+
 
     public void printProductReport(Product product) {
 
@@ -76,10 +86,12 @@ public class ProductManager {
 
         List<Review> reviews = products.get(product);
 
+        Collections.sort(reviews);
         for (Review review: reviews) {
 
             txt.append(MessageFormat.format(resources.getString("review"), review.getRating().getStars(), review.getComments()));
             txt.append("\n");
+
 
         }
             if(reviews.isEmpty()) {
@@ -88,6 +100,20 @@ public class ProductManager {
                 txt.append("\n");
 
         }
+
             System.out.println(txt);
+    }
+
+    public Product searchProduct(int id) {
+        Product result = null;
+
+        for(Product product: products.keySet()) {
+
+            if(product.getId() == id) {
+                result = product;
+                break;
+            }
+        }
+        return result;
     }
 }

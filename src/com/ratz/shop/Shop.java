@@ -36,20 +36,20 @@ public class Shop {
         pm.printProductReport(105);
 
 
-
-        //using Comparator
-        Comparator<Product> ratingShorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
-        pm.printProducts(ratingShorter);
-
-        //using Comparator
-        Comparator<Product> ratingCheaper = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
-        pm.printProducts(ratingCheaper.thenComparing(ratingShorter));
-
-        //we can do the comparators at same time
-        pm.printProducts(ratingCheaper.thenComparing(ratingShorter));
+//
+//        //using Comparator
+//        Comparator<Product> ratingShorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
+//        pm.printProducts(ratingShorter);
+//
+//        //using Comparator
+//        Comparator<Product> ratingCheaper = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
+//        pm.printProducts(ratingCheaper.thenComparing(ratingShorter));
+//
+//        //we can do the comparators at same time
+//        pm.printProducts(ratingCheaper.thenComparing(ratingShorter));
 
         //Directly
-        pm.printProducts((p1,p2)-> p2.getPrice().compareTo(p1.getPrice()));
-        pm.printProducts((p1,p2)-> p2.getRating().ordinal() - p1.getRating().ordinal());
+//        pm.printProducts((p1,p2)-> p2.getPrice().compareTo(p1.getPrice()));
+        pm.printProducts(p->p.getPrice().floatValue() < 2 ,(p1,p2)-> p2.getRating().ordinal() - p1.getRating().ordinal());
     }
 }

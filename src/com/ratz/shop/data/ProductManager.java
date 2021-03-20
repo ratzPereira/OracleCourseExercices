@@ -8,13 +8,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 public class ProductManager {
 
 
     private ResourceFormatter formatter;
+    private Product product;
 
     private Map<Product, List<Review>> products = new HashMap<>();
     private static  Map<String, ResourceFormatter> formatters = Map.of("en-GB", new ResourceFormatter(Locale.UK),
@@ -162,6 +162,13 @@ public class ProductManager {
 //            }
 //        }
 //        return result;
+    }
+
+    public Map<String,String> getDiscounts() {
+
+        return products.keySet().stream().collect(Collectors.groupingBy(product -> product.getRating().getStars(),
+                Collectors.collectingAndThen(Collectors.summarizingDouble( product -> product.getDiscount().doubleValue())
+                        , discount -> formatter.moneyFormat.format(discount))));
     }
 
     private static class ResourceFormatter {

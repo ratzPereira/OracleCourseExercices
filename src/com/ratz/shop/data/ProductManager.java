@@ -75,6 +75,22 @@ public class ProductManager {
     }
 
 
+    public void printProducts(Comparator<Product> sorter) {
+
+        List<Product> productList = new ArrayList<>(products.keySet());
+        productList.sort(sorter);
+
+        StringBuilder txt = new StringBuilder();
+
+        for(Product product: productList) {
+            txt.append(formatter.formatProduct(product));
+            txt.append("\n");
+        }
+
+        System.out.println(txt);
+    }
+
+
     public void printProductReport(Product product) {
 
         StringBuilder txt = new StringBuilder();

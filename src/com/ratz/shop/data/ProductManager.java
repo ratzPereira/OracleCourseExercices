@@ -8,10 +8,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class ProductManager {
 
+    private static final Logger logger = Logger.getLogger(ProductManager.class.getName());
 
     private ResourceFormatter formatter;
     private Product product;
@@ -71,14 +74,30 @@ public class ProductManager {
 
         return product;
     }
+
     public Product reviewProduct(int id, Rating rating, String comments) {
 
-       return reviewProduct(searchProduct(id), rating, comments);
+        try {
+
+            return reviewProduct(searchProduct(id), rating, comments);
+        } catch (ProductManagerException e) {
+
+            logger.log(Level.INFO, e.getMessage());
+        }
+
+        return null;
     }
+
 
     public void printProductReport(int id) {
 
-        printProductReport(searchProduct(id));
+        try {
+
+            printProductReport(searchProduct(id));
+        } catch (ProductManagerException e) {
+
+            logger.log(Level.INFO,  e.getMessage());
+        }
     }
 
 
@@ -139,6 +158,7 @@ public class ProductManager {
 
 
     public void changeLocale(String languageTag) {
+
         formatter = formatters.getOrDefault(languageTag,formatters.get("en-GB"));
     }
 
@@ -148,9 +168,9 @@ public class ProductManager {
     }
 
 
-    public Product searchProduct(int id) {
+    public Product searchProduct(int id) throws ProductManagerException {
 
-        return products.keySet().stream().filter(p -> p.getId() == id).findFirst().orElseGet(()-> null);
+        return products.keySet().stream().filter(p -> p.getId() == id).findFirst().orElseThrow(() -> new ProductManagerException("Product with id " + id + " not found"));
 
 //        Product result = null;
 //

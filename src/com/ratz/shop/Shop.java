@@ -19,7 +19,7 @@ public class Shop {
         pm.reviewProduct(103, Rating.THREE_STAR, "Too much sugar");
         pm.reviewProduct(103, Rating.THREE_STAR, "It makes me fat");
 
-        pm.printProductReport(103);
+        pm.printProductReport(10);
 
         pm.createNewProduct(104,"Cookie", BigDecimal.valueOf(2.99), Rating.NOT_RATED, LocalDate.now().plusDays(2));
         pm.reviewProduct(104, Rating.ONE_STAR, "No chocolate :(");
@@ -51,5 +51,7 @@ public class Shop {
         //Directly
 //        pm.printProducts((p1,p2)-> p2.getPrice().compareTo(p1.getPrice()));
         pm.printProducts(p->p.getPrice().floatValue() < 2 ,(p1,p2)-> p2.getRating().ordinal() - p1.getRating().ordinal());
+
+
     }
 }

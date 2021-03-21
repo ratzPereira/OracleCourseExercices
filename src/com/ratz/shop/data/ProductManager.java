@@ -1,8 +1,10 @@
 package com.ratz.shop.data;
 
 import java.math.BigDecimal;
+import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -11,6 +13,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.zip.DataFormatException;
 
 public class ProductManager {
 
@@ -19,9 +22,18 @@ public class ProductManager {
     private ResourceFormatter formatter;
     private Product product;
 
+    private ResourceBundle config = ResourceBundle.getBundle("com.ratz.shop.data/config");
+
+    private MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
+    private MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
+
     private Map<Product, List<Review>> products = new HashMap<>();
-    private static  Map<String, ResourceFormatter> formatters = Map.of("en-GB", new ResourceFormatter(Locale.UK),
-            "en-US", new ResourceFormatter(Locale.US),"fr-FR", new ResourceFormatter(Locale.FRANCE),"zh-CN", new ResourceFormatter(Locale.CHINA));
+
+    private static  Map<String, ResourceFormatter> formatters = Map.of(
+            "en-GB", new ResourceFormatter(Locale.UK),
+            "en-US", new ResourceFormatter(Locale.US),
+            "fr-FR", new ResourceFormatter(Locale.FRANCE),
+            "zh-CN", new ResourceFormatter(Locale.CHINA));
 
 
     public ProductManager(Locale locale) {
@@ -156,6 +168,45 @@ public class ProductManager {
 
     }
 
+    public void parseReview(String text) {
+
+        try {
+            Object[] values = reviewFormat.parse(text);
+
+            reviewProduct(Integer.parseInt((String)values[0]), Rateable.convert(Integer.parseInt((String)values[1])), (String)values[2]);
+
+        } catch (ParseException | NumberFormatException e) {
+            logger.log(Level.WARNING, "Error parsing review " + text);
+        }
+
+    }
+
+    public void parseProduct(String text) {
+
+        try {
+
+            Object[] values = productFormat.parse(text);
+
+            int id = Integer.parseInt((String) values[1]);
+            String name = (String)values[2];
+            BigDecimal price = BigDecimal.valueOf(Double.parseDouble((String)values[3]));
+            Rating rating = Rateable.convert(Integer.parseInt((String)values[4]));
+
+            switch ((String)values[0]){
+                case "D":
+                    createNewProduct(id,name,price,rating);
+                    break;
+                case "F":
+                    LocalDate date = LocalDate.parse((String)values[5]);
+                    createNewProduct(id,name,price,rating,date);
+            }
+
+        } catch (ParseException | NumberFormatException e) {
+
+            logger.log(Level.WARNING, "Error parsing product " + text + " " + e.getMessage());
+        }
+    }
+
 
     public void changeLocale(String languageTag) {
 
@@ -190,6 +241,17 @@ public class ProductManager {
                 Collectors.collectingAndThen(Collectors.summarizingDouble( product -> product.getDiscount().doubleValue())
                         , discount -> formatter.moneyFormat.format(discount))));
     }
+
+
+
+
+
+
+
+
+
+
+
 
     private static class ResourceFormatter {
 

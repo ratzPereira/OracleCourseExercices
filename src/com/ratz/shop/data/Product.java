@@ -1,11 +1,12 @@
 package com.ratz.shop.data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public abstract class Product implements Rateable<Product> {
+public abstract class Product implements Rateable<Product>, Serializable {
 
 
     private static final BigDecimal DISCOUNT_RATE = BigDecimal.valueOf(0.1);

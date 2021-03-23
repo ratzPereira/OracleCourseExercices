@@ -1,18 +1,17 @@
 package com.ratz.shop.data;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.sql.Date;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -122,7 +121,7 @@ public class ProductManager {
             printProductReport(searchProduct(id));
         } catch (ProductManagerException e) {
 
-            logger.log(Level.SEVERE, "Error printing product report" +  e.getMessage(), e);
+            logger.log(Level.SEVERE, "Error printing product report " +  e.getMessage(), e);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -132,16 +131,9 @@ public class ProductManager {
 
     public void printProducts(Predicate<Product> filter, Comparator<Product> sorter) {
 
-//        List<Product> productList = new ArrayList<>(products.keySet());
-//        productList.sort(sorter);
-
         StringBuilder txt = new StringBuilder();
 
         products.keySet().stream().sorted(sorter).filter(filter).forEach( p -> txt.append(formatter.formatProduct(p) + '\n'));
-//        for(Product product: productList) {
-//            txt.append(formatter.formatProduct(product));
-//            txt.append("\n");
-//        }
 
         System.out.println(txt);
     }
@@ -171,7 +163,7 @@ public class ProductManager {
         }
     }
 
-    private Review parseReview(String text) {
+    public Review parseReview(String text) {
         Review review = null;
         try {
             Object[] values = reviewFormat.parse(text);
@@ -186,7 +178,7 @@ public class ProductManager {
         return review;
     }
 
-    private Product parseProduct(String text) {
+    public Product parseProduct(String text) {
 
         Product product = null;
         try {
@@ -231,16 +223,6 @@ public class ProductManager {
 
         return products.keySet().stream().filter(p -> p.getId() == id).findFirst().orElseThrow(() -> new ProductManagerException("Product with id " + id + " not found"));
 
-//        Product result = null;
-//
-//        for(Product product: products.keySet()) {
-//
-//            if(product.getId() == id) {
-//                result = product;
-//                break;
-//            }
-//        }
-//        return result;
     }
 
     public Map<String,String> getDiscounts() {
@@ -307,6 +289,48 @@ public class ProductManager {
         }
     }
 
+    public void dumpData() {
+
+        try {
+
+            if(Files.notExists(tempFolder)){
+                Files.createDirectory(tempFolder);
+            }
+
+            Path tempFile = tempFolder.resolve(MessageFormat.format(config.getString("temp.file"), Date.valueOf(LocalDate.now()).toString().trim()));
+
+            try(ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(tempFile, StandardOpenOption.CREATE))){
+
+                //we take all the product with reviews from memory and dump in the file
+                out.writeObject(products);
+                //and we reset at the reference map to point a new empty hash map with no products
+                products = new HashMap<>();
+            }
+
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error dumping data "  + e.getMessage(), e);
+        }
+    }
+
+    //we tell the compiler that we have sure that hes reading from file that has Products and Reviews
+    @SuppressWarnings("unchecked")
+    public void restoreData() {
+
+        try {
+
+            Path tempFile = Files.list(tempFolder).filter(path -> path.getFileName().toString().endsWith("tmp")).findFirst().orElseThrow();
+
+            try(ObjectInputStream in = new ObjectInputStream(Files.newInputStream(tempFile, StandardOpenOption.DELETE_ON_CLOSE))) {
+
+                //we lose generics here. compiler cant check if we are really getting Products and reviews
+                products =(HashMap)in.readObject();
+
+            }
+
+        }catch (Exception e) {
+            logger.log(Level.SEVERE, "Error restoring data "  + e.getMessage(), e);
+        }
+    }
 
 
 

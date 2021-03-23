@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -52,7 +53,9 @@ public class ProductManager {
     }
 
     public ProductManager(String languageTag) {
+
         changeLocale(languageTag);
+        loadAllData();
     }
 
 
@@ -168,21 +171,24 @@ public class ProductManager {
         }
     }
 
-    public void parseReview(String text) {
-
+    private Review parseReview(String text) {
+        Review review = null;
         try {
             Object[] values = reviewFormat.parse(text);
 
-            reviewProduct(Integer.parseInt((String)values[0]), Rateable.convert(Integer.parseInt((String)values[1])), (String)values[2]);
+            //we just want the stars and comments
+            review = new Review(Rateable.convert(Integer.parseInt((String)values[0])), (String)values[1]);
 
         } catch (ParseException | NumberFormatException e) {
             logger.log(Level.WARNING, "Error parsing review " + text);
         }
 
+        return review;
     }
 
-    public void parseProduct(String text) {
+    private Product parseProduct(String text) {
 
+        Product product = null;
         try {
 
             Object[] values = productFormat.parse(text);
@@ -194,17 +200,19 @@ public class ProductManager {
 
             switch ((String)values[0]){
                 case "D":
-                    createNewProduct(id,name,price,rating);
+                    product = new Drink(id,name,price,rating);
                     break;
                 case "F":
                     LocalDate date = LocalDate.parse((String)values[5]);
-                    createNewProduct(id,name,price,rating,date);
+                    product = new Food(id,name,price,rating,date);
             }
 
         } catch (ParseException | NumberFormatException e) {
 
             logger.log(Level.WARNING, "Error parsing product " + text + " " + e.getMessage());
         }
+
+        return product;
     }
 
 
@@ -243,7 +251,61 @@ public class ProductManager {
     }
 
 
+    private List<Review> loadReviews (Product product) {
 
+        List<Review> reviews = null;
+
+        //we will read out reviews from here
+        Path file = dataFolder.resolve(MessageFormat.format(config.getString("reviews.data.file"), product.getId()));
+
+        if(Files.notExists(file)) {
+
+            reviews = new ArrayList<>();
+        } else {
+
+            try {
+                reviews= Files.lines(file, Charset.forName("UTF-8"))
+                        .map(this::parseReview)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Error Loading the reviews "  + e.getMessage());
+            }
+        }
+        return reviews;
+    }
+
+
+    private Product loadProduct(Path file) {
+
+        Product product = null;
+
+        try {
+            product = parseProduct(Files.lines(dataFolder.resolve(file), Charset.forName("UTF-8")).findFirst().orElseThrow());
+
+        } catch (Exception e) {
+
+            logger.log(Level.WARNING, "Error Loading the Product " + e.getMessage());
+        }
+
+        return product;
+    }
+
+
+    private void loadAllData(){
+
+        try {
+            products =  Files.list(dataFolder)
+                    .filter(file -> file.getFileName().toString().startsWith("product"))
+                    .map(this::loadProduct)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toMap(product -> product, product -> loadReviews(product)));
+
+        } catch (IOException e) {
+
+            logger.log(Level.SEVERE, "Error Loading Data "  + e.getMessage());
+        }
+    }
 
 
 

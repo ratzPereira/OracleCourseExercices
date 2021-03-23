@@ -1,6 +1,13 @@
 package com.ratz.shop.data;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
@@ -17,12 +24,16 @@ import java.util.zip.DataFormatException;
 
 public class ProductManager {
 
+    private ResourceBundle config = ResourceBundle.getBundle("com.ratz.shop.data/config");
+
+    private Path reportsFolder = Path.of(config.getString("reports.folder"));
+    private Path dataFolder = Path.of(config.getString("data.folder"));
+    private Path tempFolder = Path.of(config.getString("temp.folder"));
+
     private static final Logger logger = Logger.getLogger(ProductManager.class.getName());
 
     private ResourceFormatter formatter;
     private Product product;
-
-    private ResourceBundle config = ResourceBundle.getBundle("com.ratz.shop.data/config");
 
     private MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
     private MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
@@ -108,7 +119,10 @@ public class ProductManager {
             printProductReport(searchProduct(id));
         } catch (ProductManagerException e) {
 
-            logger.log(Level.INFO,  e.getMessage());
+            logger.log(Level.SEVERE, "Error printing product report" +  e.getMessage(), e);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -130,42 +144,28 @@ public class ProductManager {
     }
 
 
-    public void printProductReport(Product product) {
-
-        StringBuilder txt = new StringBuilder();
-        txt.append( formatter.formatProduct(product) );
-        txt.append("\n");
+    public void printProductReport(Product product) throws IOException {
 
         List<Review> reviews = products.get(product);
-
         Collections.sort(reviews);
 
 
+        Path productFile = reportsFolder.resolve(MessageFormat.format(config.getString("report.file"), product.getId()));
+
+        try(PrintWriter out = new PrintWriter(new OutputStreamWriter(Files.newOutputStream(productFile, StandardOpenOption.CREATE),"UTF-8"))){
+
+        out.append( formatter.formatProduct(product)+System.lineSeparator() );
+
         if(reviews.isEmpty()){
 
-            txt.append(formatter.getText("no.reviews"));
-            txt.append("\n");
+            out.append(formatter.getText("no.reviews") + System.lineSeparator());
+
         } else {
 
-            txt.append(reviews.stream().map(p -> formatter.formatReview(p)+ '\n').collect(Collectors.joining()));
+            out.append(reviews.stream().map(p -> formatter.formatReview(p)+  System.lineSeparator()).collect(Collectors.joining()));
+            }
+
         }
-
-        System.out.println(txt);
-//        for (Review review: reviews) {
-//
-//            txt.append( formatter.formatReview(review) );
-//            txt.append("\n");
-//
-//
-//        }
-//            if(reviews.isEmpty()) {
-//
-//                txt.append(formatter.getText("no.reviews"));
-//                txt.append("\n");
-//
-//        }
-
-
     }
 
     public void parseReview(String text) {
@@ -241,11 +241,6 @@ public class ProductManager {
                 Collectors.collectingAndThen(Collectors.summarizingDouble( product -> product.getDiscount().doubleValue())
                         , discount -> formatter.moneyFormat.format(discount))));
     }
-
-
-
-
-
 
 
 

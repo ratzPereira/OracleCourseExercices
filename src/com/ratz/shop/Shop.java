@@ -8,6 +8,7 @@ import java.util.*;
 
 public class Shop {
 
+
     public static void main(String[] args) {
 
         ProductManager pm = new ProductManager(Locale.UK);
@@ -54,7 +55,6 @@ public class Shop {
         //Directly
 //        pm.printProducts((p1,p2)-> p2.getPrice().compareTo(p1.getPrice()));
         pm.printProducts(p->p.getPrice().floatValue() < 2 ,(p1,p2)-> p2.getRating().ordinal() - p1.getRating().ordinal());
-
 
     }
 }

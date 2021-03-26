@@ -7,11 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.Date;
-import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -20,7 +18,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.zip.DataFormatException;
+
 
 public class ProductManager {
 
@@ -32,7 +30,7 @@ public class ProductManager {
 
     private static final Logger logger = Logger.getLogger(ProductManager.class.getName());
 
-    private ResourceFormatter formatter;
+    //private ResourceFormatter formatter;
     private Product product;
 
     private MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
@@ -47,16 +45,16 @@ public class ProductManager {
             "zh-CN", new ResourceFormatter(Locale.CHINA));
 
 
-    public ProductManager(Locale locale) {
-        this(locale.toLanguageTag());
-    }
+    private  static final ProductManager pm = new ProductManager();
 
-    public ProductManager(String languageTag) {
-
-        changeLocale(languageTag);
+    private ProductManager() {
         loadAllData();
     }
 
+    //we create one single instance of productManager and we share that same instance with this public method
+    public static ProductManager getInstance(){
+        return pm;
+    }
 
     public Product createNewProduct(int id, String name, BigDecimal price, Rating  rating, LocalDate bestBefore){
 
@@ -114,11 +112,12 @@ public class ProductManager {
     }
 
 
-    public void printProductReport(int id) {
+    public void printProductReport(int id, String languageTag) {
+
 
         try {
 
-            printProductReport(searchProduct(id));
+            printProductReport(searchProduct(id), languageTag);
         } catch (ProductManagerException e) {
 
             logger.log(Level.SEVERE, "Error printing product report " +  e.getMessage(), e);
@@ -129,7 +128,9 @@ public class ProductManager {
     }
 
 
-    public void printProducts(Predicate<Product> filter, Comparator<Product> sorter) {
+    public void printProducts(Predicate<Product> filter, Comparator<Product> sorter, String languageTag) {
+
+        ResourceFormatter formatter = formatters.getOrDefault(languageTag,formatters.get("en-GB"));
 
         StringBuilder txt = new StringBuilder();
 
@@ -139,10 +140,12 @@ public class ProductManager {
     }
 
 
-    public void printProductReport(Product product) throws IOException {
+    public void printProductReport(Product product, String languageTag) throws IOException {
 
         List<Review> reviews = products.get(product);
         Collections.sort(reviews);
+
+        ResourceFormatter formatter = formatters.getOrDefault(languageTag,formatters.get("en-GB"));
 
 
         Path productFile = reportsFolder.resolve(MessageFormat.format(config.getString("report.file"), product.getId()));
@@ -208,10 +211,10 @@ public class ProductManager {
     }
 
 
-    public void changeLocale(String languageTag) {
-
-        formatter = formatters.getOrDefault(languageTag,formatters.get("en-GB"));
-    }
+//    public void changeLocale(String languageTag) {
+//
+//        formatter = formatters.getOrDefault(languageTag,formatters.get("en-GB"));
+//    }
 
 
     public static Set<String> getSupportedLocales() {
@@ -225,7 +228,10 @@ public class ProductManager {
 
     }
 
-    public Map<String,String> getDiscounts() {
+    public Map<String,String> getDiscounts(String languageTag) {
+
+        //if languageTag does not exist or invalid, en-GB will be used
+        ResourceFormatter formatter = formatters.getOrDefault(languageTag, formatters.get("en-GB"));
 
         return products.keySet().stream().collect(Collectors.groupingBy(product -> product.getRating().getStars(),
                 Collectors.collectingAndThen(Collectors.summarizingDouble( product -> product.getDiscount().doubleValue())
@@ -281,7 +287,7 @@ public class ProductManager {
                     .filter(file -> file.getFileName().toString().startsWith("product"))
                     .map(this::loadProduct)
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toMap(product -> product, product -> loadReviews(product)));
+                    .collect(Collectors.toMap(product -> product, this::loadReviews));
 
         } catch (IOException e) {
 

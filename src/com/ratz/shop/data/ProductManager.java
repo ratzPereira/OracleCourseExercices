@@ -32,8 +32,6 @@ public class ProductManager {
 
     private static final Logger logger = Logger.getLogger(ProductManager.class.getName());
 
-    //private ResourceFormatter formatter;
-    //private Product product;
 
     private final MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
     private final MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
@@ -240,12 +238,6 @@ public class ProductManager {
 
         return product;
     }
-
-
-//    public void changeLocale(String languageTag) {
-//
-//        formatter = formatters.getOrDefault(languageTag,formatters.get("en-GB"));
-//    }
 
 
     public static Set<String> getSupportedLocales() {

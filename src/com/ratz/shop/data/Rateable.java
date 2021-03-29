@@ -5,7 +5,7 @@ package com.ratz.shop.data;
 public interface Rateable<T> {
 
 
-    public static final Rating DEFAULT_RATING = Rating.NOT_RATED;
+    Rating DEFAULT_RATING = Rating.NOT_RATED;
 
 
     T applyRating(Rating rating);

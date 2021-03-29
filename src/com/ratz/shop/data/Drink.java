@@ -1,9 +1,8 @@
 package com.ratz.shop.data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Locale;
+
 
 public final class Drink extends  Product{
 
@@ -16,7 +15,6 @@ public final class Drink extends  Product{
         LocalTime now = LocalTime.now();
 
         return (now.isAfter(LocalTime.of(17,30)) && now.isBefore(LocalTime.of(18,30))) ? super.getDiscount() : BigDecimal.ZERO;
-
     }
 
     @Override

@@ -32,11 +32,6 @@ public class Shop {
             StringBuilder log = new StringBuilder();
             log.append(clientId+threadName + "\n- \tstart of log \t -\n");
 
-            /*log.append(pm.getDiscounts(languageTag)
-            .entrySet()
-            .stream()
-            .map(entry -> entry.getKey() + "\t" + entry.getValue())
-            .collect(Collectors.joining("\n")));*/
 
             Product product = pm.reviewProduct(productId,Rating.FOUR_STAR, "Oh yeah Boy");
             log.append((product != null) ? "\nProduct " + productId + " Reviewed" : "\n Product " + productId + " not reviewed ");
